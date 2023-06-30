@@ -5,6 +5,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
+import ru.yandex.practicum.filmorate.validator.After;
 
 import java.time.LocalDate;
 
@@ -20,6 +21,7 @@ public class Film {
     private final String description;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @After(date = "1895-12-28", message = "Film release date should be after 1895-12-28")
     private final LocalDate releaseDate;
 
     @Min(value = 0, message = "Film duration should be positive number")
