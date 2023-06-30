@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import javax.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +18,7 @@ import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/films")
+@Slf4j
 public class FilmController {
     private int id = 1;
 
@@ -32,10 +34,15 @@ public class FilmController {
         final Integer filmId = film.getId();
 
         if (!films.containsKey(filmId)) {
-            throw new NoSuchElementException(String.format("Film %s not found", film));
+            final String cause = String.format("Film %s not found", film);
+
+            log.error(cause);
+            throw new NoSuchElementException(cause);
         }
 
         films.put(filmId, film);
+
+        log.debug("Update film {} by id {}", film, filmId);
 
         return film;
     }
@@ -48,6 +55,8 @@ public class FilmController {
         film.setId(filmId);
 
         films.put(filmId, film);
+
+        log.debug("Add film {} by id {}", film, filmId);
 
         return film;
     }

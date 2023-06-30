@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import javax.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +18,7 @@ import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/users")
+@Slf4j
 public class UserController {
     private int id = 1;
 
@@ -32,8 +34,13 @@ public class UserController {
         final Integer userId = user.getId();
 
         if (!users.containsKey(userId)) {
-            throw new NoSuchElementException(String.format("User %s not found", user));
+            final String cause = String.format("User %s not found", user);
+
+            log.error(cause);
+            throw new NoSuchElementException(cause);
         }
+
+        log.debug("Update user {} by id {}", user, userId);
 
         users.put(userId, user);
 
@@ -48,6 +55,8 @@ public class UserController {
         user.setId(userId);
 
         users.put(userId, user);
+
+        log.debug("Add user {} by id {}", user, userId);
 
         return user;
     }
