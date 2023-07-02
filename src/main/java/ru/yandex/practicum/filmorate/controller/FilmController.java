@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exception.NoSuchFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/films")
@@ -34,10 +34,10 @@ public class FilmController {
         final Integer filmId = film.getId();
 
         if (!films.containsKey(filmId)) {
-            final String cause = String.format("Film %s not found", film);
+            final String message = String.format("Film %s not found", film);
 
-            log.error(cause);
-            throw new NoSuchElementException(cause);
+            log.error(message);
+            throw new NoSuchFilmException(message);
         }
 
         films.put(filmId, film);

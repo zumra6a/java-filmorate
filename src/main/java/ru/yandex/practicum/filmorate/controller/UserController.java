@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exception.NoSuchUserException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/users")
@@ -34,10 +34,10 @@ public class UserController {
         final Integer userId = user.getId();
 
         if (!users.containsKey(userId)) {
-            final String cause = String.format("User %s not found", user);
+            final String message = String.format("User %s not found", user);
 
-            log.error(cause);
-            throw new NoSuchElementException(cause);
+            log.error(message);
+            throw new NoSuchUserException(message);
         }
 
         log.debug("Update user {} by id {}", user, userId);
