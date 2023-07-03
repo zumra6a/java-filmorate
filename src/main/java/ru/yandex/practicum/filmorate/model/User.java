@@ -5,12 +5,16 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
+
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
 @Data
+@Builder(toBuilder = true, access = AccessLevel.PUBLIC)
 public class User {
     private int id;
 
