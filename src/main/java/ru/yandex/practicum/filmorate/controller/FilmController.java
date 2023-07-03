@@ -32,7 +32,7 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        final Integer filmId = film.getId();
+        final int filmId = film.getId();
 
         if (!films.containsKey(filmId)) {
             final String message = String.format("Film %s not found", film);

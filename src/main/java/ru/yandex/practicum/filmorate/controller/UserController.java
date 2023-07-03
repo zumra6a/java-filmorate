@@ -32,7 +32,7 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        final Integer userId = user.getId();
+        final int userId = user.getId();
 
         if (!users.containsKey(userId)) {
             final String message = String.format("User %s not found", user);
