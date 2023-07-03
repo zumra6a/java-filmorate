@@ -23,7 +23,7 @@ import java.util.Map;
 public class UserController {
     private int id = 1;
 
-    private Map<Integer, User> users = new HashMap<>();
+    private final Map<Integer, User> users = new HashMap<>();
 
     @GetMapping
     public List<User> getAllUsers() {

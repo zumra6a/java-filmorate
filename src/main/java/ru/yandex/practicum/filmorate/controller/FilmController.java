@@ -23,7 +23,7 @@ import java.util.Map;
 public class FilmController {
     private int id = 1;
 
-    private Map<Integer, Film> films = new HashMap<>();
+    private final Map<Integer, Film> films = new HashMap<>();
 
     @GetMapping
     public List<Film> getAllFilms() {
