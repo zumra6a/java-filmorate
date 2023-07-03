@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -60,11 +59,5 @@ public class UserController {
         log.debug("Add user {} by id {}", user, userId);
 
         return user;
-    }
-
-    @DeleteMapping
-    public void cleanUp() {
-        id = 1;
-        users.clear();
     }
 }
