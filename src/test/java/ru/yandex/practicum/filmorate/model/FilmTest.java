@@ -17,7 +17,7 @@ class FilmTest {
     @Test
     @DisplayName("film name should not be blank")
     public void testBlankName() {
-        final Film film = new Film("", "description", LocalDate.now(), 120);
+        final Film film = new Film(1, "", "description", LocalDate.now(), 120);
 
         assertTrue(validator
                 .validateProperty(film, "name")
@@ -29,7 +29,7 @@ class FilmTest {
     @Test
     @DisplayName("film description should not be blank")
     public void testBlankDescription() {
-        final Film film = new Film("name", "", LocalDate.now(), 120);
+        final Film film = new Film(1, "name", "", LocalDate.now(), 120);
 
         assertTrue(validator
                 .validateProperty(film, "description")
@@ -42,7 +42,7 @@ class FilmTest {
     @DisplayName("film description length should not be longer than 200")
     public void testLongDescription() {
         final String description = "-".repeat(201);
-        final Film film = new Film("name", description, LocalDate.now(), 120);
+        final Film film = new Film(1, "name", description, LocalDate.now(), 120);
 
         assertTrue(validator
                 .validateProperty(film, "description")
@@ -55,7 +55,7 @@ class FilmTest {
     @DisplayName("film release date should be after 1895-12-28")
     public void testReleaseDate() {
         final LocalDate releaseDate = LocalDate.parse("1895-12-28");
-        final Film film = new Film("name", "description", releaseDate, 120);
+        final Film film = new Film(1, "name", "description", releaseDate, 120);
 
         assertTrue(validator
                 .validateProperty(film, "releaseDate")
@@ -67,7 +67,7 @@ class FilmTest {
     @Test
     @DisplayName("film duration should be positive")
     public void testDuration() {
-        final Film film = new Film("name", "description", LocalDate.now(), -1);
+        final Film film = new Film(0, "name", "description", LocalDate.now(), -1);
 
         assertTrue(validator
                 .validateProperty(film, "duration")
