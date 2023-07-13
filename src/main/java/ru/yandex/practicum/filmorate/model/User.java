@@ -33,6 +33,6 @@ public class User {
     private final LocalDate birthday;
 
     public String getName() {
-        return name == null ? login : name;
+        return name == null || name.isBlank() ? login : name;
     }
 }
