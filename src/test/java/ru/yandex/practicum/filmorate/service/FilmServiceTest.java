@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.exception.film.NoSuchFilmException;
 import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -29,16 +28,13 @@ public class FilmServiceTest {
     @Mock
     private UserStorage userStorage;
 
-    @Mock
-    private LikeStorage likeStorage;
-
     @MockBean
     private FilmService filmService;
 
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        filmService = new FilmService(filmStorage, userStorage, likeStorage);
+        filmService = new FilmService(filmStorage, userStorage);
     }
 
     @Test
@@ -166,7 +162,6 @@ public class FilmServiceTest {
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);
-        verify(likeStorage, times(1)).add(1, 1);
     }
 
     @Test
@@ -187,7 +182,6 @@ public class FilmServiceTest {
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);
-        verify(likeStorage, never()).add(1, 1);
     }
 
     @Test
@@ -208,7 +202,6 @@ public class FilmServiceTest {
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);
-        verify(likeStorage, never()).add(anyInt(), anyInt());
     }
 
     @Test
@@ -221,7 +214,6 @@ public class FilmServiceTest {
                 .releaseDate(LocalDate.of(2023, 7, 1))
                 .duration(120)
                 .build();
-
         final User user = User.builder()
                 .id(1)
                 .email("email@adress.com")
@@ -230,6 +222,7 @@ public class FilmServiceTest {
                 .birthday(LocalDate.of(2000, 7, 1))
                 .build();
 
+        film.getLikes().add(user.getId());
         Mockito.doReturn(Optional.of(film)).when(filmStorage).findOneById(1);
         Mockito.doReturn(Optional.of(user)).when(userStorage).findOneById(1);
 
@@ -237,7 +230,6 @@ public class FilmServiceTest {
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);
-        verify(likeStorage, times(1)).remove(1, 1);
     }
 
     @Test
@@ -258,7 +250,6 @@ public class FilmServiceTest {
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);
-        verify(likeStorage, never()).remove(1, 1);
     }
 
     @Test
@@ -279,6 +270,5 @@ public class FilmServiceTest {
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);
-        verify(likeStorage, never()).remove(1, 1);
     }
 }

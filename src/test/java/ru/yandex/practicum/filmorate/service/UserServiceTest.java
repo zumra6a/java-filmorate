@@ -9,7 +9,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.FriendsStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -18,10 +17,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -29,16 +28,13 @@ class UserServiceTest {
     @Mock
     private UserStorage userStorage;
 
-    @Mock
-    private FriendsStorage friendsStorage;
-
     @MockBean
     private UserService userService;
 
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        userService = new UserService(userStorage, friendsStorage);
+        userService = new UserService(userStorage);
     }
 
     @Test
@@ -144,31 +140,37 @@ class UserServiceTest {
     @Test
     @DisplayName("should find all friends")
     public void testFindAllFriends() {
-        final User user1 = User.builder()
+        final User friend1 = User.builder()
                 .id(10)
-                .email("email@adress.com")
-                .login("login")
-                .name("User Name")
+                .email("friend-1@yandex.com")
+                .login("friend-1")
+                .name("Friend Name One")
                 .birthday(LocalDate.of(2000, 7, 1))
                 .build();
 
-        final User user2 = User.builder()
+        final User friend2 = User.builder()
                 .id(11)
-                .email("email@yandex.com")
-                .login("other-login")
-                .name("Other Username")
+                .email("friend-2@yandex.com")
+                .login("friend-2")
+                .name("Friend Name two")
                 .birthday(LocalDate.of(2001, 8, 10))
                 .build();
 
-        Mockito.doReturn(Optional.of(user1)).when(userStorage).findOneById(10);
-        Mockito.doReturn(Optional.of(user2)).when(userStorage).findOneById(11);
-        Mockito.doReturn(
-                Set.of(user1.getId(), user2.getId())
-        ).when(friendsStorage).findAllById(1);
+        final User user = User.builder()
+                .id(1)
+                .email("email@yandex.by")
+                .login("user")
+                .name("User Name")
+                .birthday(LocalDate.of(2001, 8, 10))
+                .build();
+        user.getFriends().addAll(Set.of(friend1.getId(), friend2.getId()));
+        Mockito.doReturn(Optional.of(friend1)).when(userStorage).findOneById(friend1.getId());
+        Mockito.doReturn(Optional.of(friend2)).when(userStorage).findOneById(friend2.getId());
+        Mockito.doReturn(Optional.of(user)).when(userStorage).findOneById(user.getId());
 
         List<User> result = userService.findAllFriends(1);
 
-        assertTrue(result.containsAll(List.of(user1, user2)));
+        assertTrue(result.containsAll(List.of(friend1, friend2)));
     }
 
     @Test
@@ -190,13 +192,12 @@ class UserServiceTest {
                 .birthday(LocalDate.of(2001, 8, 10))
                 .build();
 
-        Mockito.doReturn(Optional.of(user1)).when(userStorage).findOneById(10);
-        Mockito.doReturn(Optional.of(user2)).when(userStorage).findOneById(11);
-        Mockito.doNothing().when(friendsStorage).add(anyInt(), anyInt());
+        Mockito.doReturn(Optional.of(user1)).when(userStorage).findOneById(user1.getId());
+        Mockito.doReturn(Optional.of(user2)).when(userStorage).findOneById(user2.getId());
 
         userService.addFriend(10, 11);
 
-        verify(friendsStorage, times(1)).add(10, 11);
+        assertTrue(user1.getFriends().contains(user2.getId()));
     }
 
     @Test
@@ -218,13 +219,12 @@ class UserServiceTest {
                 .birthday(LocalDate.of(2001, 8, 10))
                 .build();
 
-        Mockito.doReturn(Optional.of(user1)).when(userStorage).findOneById(10);
-        Mockito.doReturn(Optional.of(user2)).when(userStorage).findOneById(11);
-        Mockito.doNothing().when(friendsStorage).remove(anyInt(), anyInt());
+        Mockito.doReturn(Optional.of(user1)).when(userStorage).findOneById(user1.getId());
+        Mockito.doReturn(Optional.of(user2)).when(userStorage).findOneById(user2.getId());
 
         userService.removeFriend(10, 11);
 
-        verify(friendsStorage, times(1)).remove(10, 11);
+        assertFalse(user1.getFriends().contains(user2.getId()));
     }
 
     @Test
@@ -254,17 +254,14 @@ class UserServiceTest {
                 .birthday(LocalDate.of(2000, 3, 1))
                 .build();
 
-        Mockito.doReturn(Optional.of(user1)).when(userStorage).findOneById(10);
-        Mockito.doReturn(Optional.of(user2)).when(userStorage).findOneById(11);
-        Mockito.doReturn(Optional.of(user3)).when(userStorage).findOneById(13);
-        Mockito.doReturn(
-                Set.of(user1.getId(), user2.getId())
-        ).when(friendsStorage).findAllById(1);
-        Mockito.doReturn(
-                Set.of(user2.getId(), user3.getId())
-        ).when(friendsStorage).findAllById(2);
+        user1.getFriends().addAll(Set.of(user2.getId(), user3.getId()));
+        user3.getFriends().addAll(Set.of(user1.getId(), user2.getId()));
 
-        List<User> result = userService.findCommonFriends(1, 2);
+        Mockito.doReturn(Optional.of(user1)).when(userStorage).findOneById(user1.getId());
+        Mockito.doReturn(Optional.of(user2)).when(userStorage).findOneById(user2.getId());
+        Mockito.doReturn(Optional.of(user3)).when(userStorage).findOneById(user3.getId());
+
+        List<User> result = userService.findCommonFriends(10, 12);
 
         assertEquals(1, result.size());
         assertEquals(user2, result.get(0));

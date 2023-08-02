@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.exception.film.NoSuchFilmException;
 import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -17,12 +16,10 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final LikeStorage likeStorage;
 
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage, LikeStorage likeStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
-        this.likeStorage = likeStorage;
     }
 
     public List<Film> findAll() {
@@ -49,7 +46,7 @@ public class FilmService {
 
     public List<Film> getPopularFilms(int count) {
         return findAll().stream()
-                .sorted((Film a, Film b) -> likeStorage.count(b.getId()) - likeStorage.count(a.getId()))
+                .sorted((Film a, Film b) -> b.getLikes().size() - a.getLikes().size())
                 .limit(count)
                 .collect(Collectors.toList());
     }
@@ -60,9 +57,7 @@ public class FilmService {
 
         if (optFilm.isPresent() && optUser.isPresent()) {
             final Film film = optFilm.get();
-
-            likeStorage.add(film.getId(), userId);
-
+            film.getLikes().add(userId);
             return;
         }
 
@@ -81,8 +76,7 @@ public class FilmService {
 
         if (optFilm.isPresent() && optUser.isPresent()) {
             final Film film = optFilm.get();
-
-            likeStorage.remove(film.getId(), userId);
+            film.getLikes().remove(userId);
 
             return;
         }
