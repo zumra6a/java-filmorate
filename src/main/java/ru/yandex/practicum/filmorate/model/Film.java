@@ -4,6 +4,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import ru.yandex.practicum.filmorate.validator.After;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder(toBuilder = true, access = AccessLevel.PUBLIC)
@@ -30,4 +33,7 @@ public class Film {
 
     @Min(value = 0, message = "Film duration should be positive number")
     private final long duration;
+
+    @JsonIgnore
+    private final Set<Integer> likes = new HashSet<>();
 }

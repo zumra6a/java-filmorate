@@ -6,12 +6,15 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder(toBuilder = true, access = AccessLevel.PUBLIC)
@@ -32,7 +35,10 @@ public class User {
     @Past(message = "User birthday should not be in future")
     private final LocalDate birthday;
 
+    @JsonIgnore
+    private final Set<Integer> friends = new HashSet<>();
+
     public String getName() {
-        return name == null ? login : name;
+        return name == null || name.isBlank() ? login : name;
     }
 }
