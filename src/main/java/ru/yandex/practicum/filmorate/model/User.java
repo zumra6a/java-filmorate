@@ -35,6 +35,7 @@ public class User {
     @Past(message = "User birthday should not be in future")
     private final LocalDate birthday;
 
+    @Builder.Default
     @JsonIgnore
     private final Set<Integer> friends = new HashSet<>();
 

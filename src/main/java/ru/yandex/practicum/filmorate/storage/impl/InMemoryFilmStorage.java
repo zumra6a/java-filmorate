@@ -1,9 +1,10 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.film.DuplicateFilmException;
 import ru.yandex.practicum.filmorate.exception.film.NoSuchFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,17 @@ import java.util.Optional;
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
     private static int id = 1;
+
+    @Override
+    public void removeLike(int filmId, int userId) {
+
+    }
+
+    @Override
+    public List<Film> getPopularFilms(int count) {
+        return null;
+    }
+
     private final Map<Integer, Film> films;
 
     public InMemoryFilmStorage(Map<Integer, Film> films) {
@@ -62,5 +74,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
 
         throw new NoSuchFilmException(String.format("Film %s not found", film));
+    }
+
+    @Override
+    public void addLike(int filmId, int userId) {
+
     }
 }

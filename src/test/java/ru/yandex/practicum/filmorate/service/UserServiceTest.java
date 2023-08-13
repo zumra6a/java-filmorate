@@ -9,7 +9,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -197,7 +196,7 @@ class UserServiceTest {
 
         userService.addFriend(10, 11);
 
-        assertTrue(user1.getFriends().contains(user2.getId()));
+        verify(userStorage).addFriend(10, 11);
     }
 
     @Test
@@ -224,7 +223,7 @@ class UserServiceTest {
 
         userService.removeFriend(10, 11);
 
-        assertFalse(user1.getFriends().contains(user2.getId()));
+        verify(userStorage).deleteFriend(10, 11);
     }
 
     @Test

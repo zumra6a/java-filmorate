@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,11 +25,7 @@ public class UserService {
     public User findOneById(int userId) {
         final Optional<User> optUser = userStorage.findOneById(userId);
 
-        if (optUser.isPresent()) {
-            return optUser.get();
-        }
-
-        throw new NoSuchUserException(String.format("User with id %s not found", userId));
+        return optUser.orElseThrow(() -> new NoSuchUserException(String.format("User with id %s not found", userId)));
     }
 
     public User add(User user) {
@@ -52,16 +48,14 @@ public class UserService {
         final User user = findOneById(userId);
         final User friend = findOneById(friendId);
 
-        user.getFriends().add(friend.getId());
-        friend.getFriends().add(user.getId());
+        userStorage.addFriend(user.getId(), friend.getId());
     }
 
     public void removeFriend(int userId, int friendId) {
         final User user = findOneById(userId);
         final User friend = findOneById(friendId);
 
-        user.getFriends().remove(friend.getId());
-        friend.getFriends().remove(user.getId());
+        userStorage.deleteFriend(user.getId(), friend.getId());
     }
 
     public List<User> findCommonFriends(int userId, int otherId) {

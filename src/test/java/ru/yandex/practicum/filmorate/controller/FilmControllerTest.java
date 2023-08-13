@@ -12,12 +12,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
 @WebMvcTest(controllers = FilmController.class)
@@ -100,10 +102,11 @@ public class FilmControllerTest {
                 .name("New film name")
                 .description("New film description")
                 .releaseDate(LocalDate.of(2023, 8, 5))
+                .mpa(Mpa.of(1))
                 .duration(65)
                 .build();
 
-        Mockito.doReturn(film).when(filmService).add(film);
+        Mockito.doReturn(film).when(filmService).add(any());
 
         this.mockMvc
                 .perform(
@@ -127,15 +130,16 @@ public class FilmControllerTest {
                 .id(1)
                 .name("name")
                 .description("description")
-                .releaseDate(LocalDate.of(2023, 07, 01))
+                .releaseDate(LocalDate.of(2023, 7, 1))
                 .duration(120)
+                .mpa(Mpa.of(1))
                 .build();
         final Film updatedFilm = film.toBuilder()
                 .description("new description")
-                .releaseDate(LocalDate.of(2023, 07, 02))
+                .releaseDate(LocalDate.of(2023, 7, 2))
                 .build();
 
-        Mockito.doReturn(updatedFilm).when(filmService).update(film);
+        Mockito.doReturn(updatedFilm).when(filmService).update(any());
 
         this.mockMvc
                 .perform(

@@ -19,7 +19,12 @@ class UserTest {
     @DisplayName("user email should not be null")
     public void testNullEmail() {
         final LocalDate birthdate = LocalDate.now().minusDays(1);
-        final User user = new User(1, null, "", "", birthdate);
+        final User user = User.builder()
+                .id(1)
+                .login("login")
+                .name("name")
+                .birthday(birthdate)
+                .build();
 
         assertTrue(validator
                 .validateProperty(user, "email")
@@ -32,7 +37,13 @@ class UserTest {
     @DisplayName("user email should be well-formed")
     public void testWellFormedEmail() {
         final LocalDate birthdate = LocalDate.now().minusDays(1);
-        final User user = new User(1, "some-invalid-email", "", "", birthdate);
+        final User user = User.builder()
+                .id(1)
+                .email("some-invalid-email")
+                .login("login")
+                .name("name")
+                .birthday(birthdate)
+                .build();
 
         assertTrue(validator
                 .validateProperty(user, "email")
@@ -45,7 +56,12 @@ class UserTest {
     @DisplayName("user login should not be null")
     public void testNullLogin() {
         final LocalDate birthdate = LocalDate.now().minusDays(1);
-        final User user = new User(1, "email@adress.com", null, "", birthdate);
+        final User user = User.builder()
+                .id(1)
+                .email("email@adress.com")
+                .name("name")
+                .birthday(birthdate)
+                .build();
 
         assertTrue(validator
                 .validateProperty(user, "login")
@@ -58,7 +74,13 @@ class UserTest {
     @DisplayName("user login should not be blank")
     public void testBlankLogin() {
         final LocalDate birthdate = LocalDate.now().minusDays(1);
-        final User user = new User(1, "email@adress.com", "", "", birthdate);
+        final User user = User.builder()
+                .id(1)
+                .email("email@adress.com")
+                .login("")
+                .name("name")
+                .birthday(birthdate)
+                .build();
 
         assertTrue(validator
                 .validateProperty(user, "login")
@@ -71,7 +93,13 @@ class UserTest {
     @DisplayName("user login should not contain spaces")
     public void testSpacesInLogin() {
         final LocalDate birthdate = LocalDate.now().minusDays(1);
-        final User user = new User(1, "email@adress.com", "some login", "", birthdate);
+        final User user = User.builder()
+                .id(1)
+                .email("email@adress.com")
+                .login("some login")
+                .name("name")
+                .birthday(birthdate)
+                .build();
 
         assertTrue(validator
                 .validateProperty(user, "login")
@@ -84,7 +112,13 @@ class UserTest {
     @DisplayName("user birth date should be in past")
     public void testPastBirthdate() {
         final LocalDate today = LocalDate.now().plusDays(1);
-        final User user = new User(1, "email@adress.com", "some-login", null, today);
+        final User user = User.builder()
+                .id(1)
+                .email("email@adress.com")
+                .login("login")
+                .name("name")
+                .birthday(today)
+                .build();
 
         assertTrue(validator
                 .validateProperty(user, "birthday")
@@ -97,7 +131,12 @@ class UserTest {
     @DisplayName("user name should be login if it was not defined")
     public void testUndefinedName() {
         final LocalDate birthdate = LocalDate.now().minusDays(1);
-        final User user = new User(1, "email@adress.com", "some-login", null, birthdate);
+        final User user = User.builder()
+                .id(1)
+                .email("email@adress.com")
+                .login("login")
+                .birthday(birthdate)
+                .build();
 
         assertEquals(user.getName(), user.getLogin());
     }
