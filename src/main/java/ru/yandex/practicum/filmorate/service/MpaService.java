@@ -1,14 +1,14 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import ru.yandex.practicum.filmorate.exception.Mpa.NoSuchMpaException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
-
-import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MpaService {
@@ -29,11 +29,11 @@ public class MpaService {
         return optMpa.orElseThrow(() -> new NoSuchMpaException(String.format("Mpa with id %s not found", id)));
     }
 
-    public Mpa add(@NotNull Mpa mpa) {
+    public Mpa add(Mpa mpa) {
         return mpaStorage.add(mpa);
     }
 
-    public Mpa update(@NotNull Mpa mpa) {
+    public Mpa update(Mpa mpa) {
         return mpaStorage.update(mpa);
     }
 

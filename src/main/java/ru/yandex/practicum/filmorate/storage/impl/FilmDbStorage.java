@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -83,10 +85,25 @@ public class FilmDbStorage implements FilmStorage {
 
         int newId = Objects.requireNonNull(keyHolder.getKey()).intValue();
 
+
         if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                addGenreToFilm(newId, genre.getId());
-            }
+            List<Genre> genres = new ArrayList<>(film.getGenres());
+
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)",
+                    new BatchPreparedStatementSetter() {
+
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            ps.setInt(1, newId);
+                            ps.setInt(2, genres.get(i).getId());
+                        }
+
+                        public int getBatchSize() {
+                            return genres.size();
+                        }
+
+                    }
+            );
         }
 
         return findOneById(newId).get();
@@ -113,9 +130,23 @@ public class FilmDbStorage implements FilmStorage {
             genreStorage.deleteAllByFilmId(filmId);
 
             if (film.getGenres() != null) {
-                for (Genre genre: film.getGenres()) {
-                    addGenreToFilm(filmId, genre.getId());
-                }
+                List<Genre> genres = new ArrayList<>(film.getGenres());
+
+                jdbcTemplate.batchUpdate(
+                        "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)",
+                        new BatchPreparedStatementSetter() {
+
+                            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                                ps.setInt(1, filmId);
+                                ps.setInt(2, genres.get(i).getId());
+                            }
+
+                            public int getBatchSize() {
+                                return genres.size();
+                            }
+
+                        }
+                );
             }
 
             return findOneById(filmId).get();
@@ -154,12 +185,6 @@ public class FilmDbStorage implements FilmStorage {
                 + " LIMIT ?";
 
         return jdbcTemplate.query(query, this::mapRowToFilm, limit);
-    }
-
-    public void addGenreToFilm(int filmId, int genreId) {
-        String query = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-
-        jdbcTemplate.update(query, filmId, genreId);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {

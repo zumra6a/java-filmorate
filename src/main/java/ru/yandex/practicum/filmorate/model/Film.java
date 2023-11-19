@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -10,11 +14,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.yandex.practicum.filmorate.validator.After;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import ru.yandex.practicum.filmorate.validator.After;
 
 @Data
 @Builder(toBuilder = true, access = AccessLevel.PUBLIC)

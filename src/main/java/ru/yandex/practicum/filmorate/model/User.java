@@ -1,9 +1,14 @@
 package ru.yandex.practicum.filmorate.model;
 
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
+import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,10 +17,6 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
-
 @Data
 @Builder(toBuilder = true, access = AccessLevel.PUBLIC)
 public class User {
@@ -23,6 +24,7 @@ public class User {
 
     @NotNull(message = "User email should not be null")
     @Email(message = "User should have well-formed email address")
+    @NotEmpty(message = "User should not be empty")
     private final String email;
 
     @NotBlank(message = "User should have login")
@@ -32,7 +34,8 @@ public class User {
     private final String name;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @Past(message = "User birthday should not be in future")
+    @PastOrPresent(message = "User birthday should not be in future")
+    @NotNull
     private final LocalDate birthday;
 
     @Builder.Default
