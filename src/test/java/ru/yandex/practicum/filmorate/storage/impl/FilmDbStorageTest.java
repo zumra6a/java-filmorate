@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,14 +150,10 @@ class FilmDbStorageTest {
 
         filmDbStorage.addLike(film.getId(), user.getId());
 
-        Optional<Film> filmOpt = filmDbStorage.findOneById(film.getId());
+        List<Integer> likes = filmDbStorage.fetchLikes(film.getId());
 
-        assertThat(filmOpt).isNotEmpty();
-        assertThat(filmOpt.get())
-                .usingRecursiveComparison()
-                .ignoringFields("id", "mpa.name", "likes")
-                .isEqualTo(film);
-        assertThat(filmOpt.get().getLikes()).isEqualTo(Collections.singleton(user.getId()));
+        assertThat(likes).isNotNull();
+        assertThat(likes.contains(user.getId())).isTrue();
     }
 
     @Test
@@ -184,17 +179,17 @@ class FilmDbStorageTest {
 
         filmDbStorage.addLike(film.getId(), user.getId());
 
-        Optional<Film> filmOptBefore = filmDbStorage.findOneById(film.getId());
+        List<Integer> likes = filmDbStorage.fetchLikes(film.getId());
 
-        assertThat(filmOptBefore).isNotEmpty();
-        assertThat(filmOptBefore.get().getLikes()).isEqualTo(Collections.singleton(user.getId()));
+        assertThat(likes).isNotNull();
+        assertThat(likes.contains(user.getId())).isTrue();
 
         filmDbStorage.removeLike(film.getId(), user.getId());
 
-        Optional<Film> filmOptAfter = filmDbStorage.findOneById(film.getId());
+        List<Integer> likesAfter = filmDbStorage.fetchLikes(film.getId());
 
-        assertThat(filmOptAfter).isNotEmpty();
-        assertThat(filmOptAfter.get().getLikes().isEmpty()).isTrue();
+        assertThat(likesAfter).isNotNull();
+        assertThat(likesAfter.contains(user.getId())).isFalse();
     }
 
     @Test

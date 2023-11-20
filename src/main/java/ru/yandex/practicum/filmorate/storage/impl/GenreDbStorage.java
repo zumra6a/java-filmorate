@@ -1,5 +1,17 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,18 +20,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.Genre.NoSuchGenreException;
-import ru.yandex.practicum.filmorate.exception.Genre.DuplicateGenreException;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import static java.util.function.UnaryOperator.identity;
 
 @Repository
 public class GenreDbStorage implements GenreStorage {
@@ -54,12 +61,6 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Genre add(Genre genre) {
-        final int genreId = genre.getId();
-
-        if (findOneById(genreId).isPresent()) {
-            throw new DuplicateGenreException(String.format("MPA %s already exists", genre));
-        }
-
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         final String query = "INSERT INTO mpa (name) VALUES (?)";
 
@@ -92,7 +93,7 @@ public class GenreDbStorage implements GenreStorage {
             return findOneById(genreId).get();
         }
 
-        throw new NoSuchGenreException(String.format("Genre %s not found", genre));
+        throw new NoSuchModelException(String.format("Genre %s not found", genre));
     }
 
     @Override
@@ -114,6 +115,28 @@ public class GenreDbStorage implements GenreStorage {
         final String query = "DELETE film_genre WHERE film_id = ?";
 
         jdbcTemplate.update(query, filId);
+    }
+
+    @Override
+    public void fetchFilmGenres(Film film) {
+        fetchFilmGenres(List.of(film));
+    }
+
+    @Override
+    public void fetchFilmGenres(List<Film> films) {
+        final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+        final Set<Integer> ids = filmById.keySet();
+        final String inSql = String.join(",", Collections.nCopies(ids.size(), "?"));
+        final String query = String.format("SELECT G.*, FG.film_id from film_genre FG " +
+                "RIGHT JOIN GENRE G on G.id = FG.genre_id WHERE FG.film_id IN (%s)", inSql);
+
+        jdbcTemplate.query(query, (rs, rowNum) -> {
+            final int filmId = rs.getInt("film_id");
+            final Film film = filmById.get(filmId);
+            film.addGenre(mapRowToGenre(rs, rowNum));
+
+            return null;
+        }, ids.toArray());
     }
 
     private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {

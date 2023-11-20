@@ -1,17 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.user.DuplicateUserException;
-import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
-
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,6 +9,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Repository;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 @Repository
 @Primary
@@ -53,12 +53,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User add(User user) {
-        int userId = user.getId();
-
-        if (findOneById(userId).isPresent()) {
-            throw new DuplicateUserException(String.format("User %s already exists", user));
-        }
-
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         final String query = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
 
@@ -97,7 +91,7 @@ public class UserDbStorage implements UserStorage {
             return findOneById(userId).get();
         }
 
-        throw new NoSuchUserException(String.format("User %s not found", user));
+        throw new NoSuchModelException(String.format("User %s not found", user));
     }
 
     @Override
@@ -135,6 +129,15 @@ public class UserDbStorage implements UserStorage {
         String sqlSetStatus = "UPDATE friends SET approved = false WHERE user_id = ? AND friend_id = ?";
 
         jdbcTemplate.update(sqlSetStatus, friendId, userId);
+    }
+
+    @Override
+    public List<User> commonFriend(int userId, int otherId) {
+        String query = "SELECT * FROM users WHERE id in (" +
+                "SELECT friend_id FROM friends WHERE user_id = ? AND friend_id IN (" +
+                "SELECT friend_id FROM friends WHERE user_id = ?))";
+
+        return jdbcTemplate.query(query, this::mapRowToUser, userId, otherId);
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {

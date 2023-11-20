@@ -1,13 +1,14 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.Genre.NoSuchGenreException;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 @Service
 public class GenreService {
@@ -26,7 +27,7 @@ public class GenreService {
     public Genre findOneById(int id) {
         final Optional<Genre> optGenre = genreStorage.findOneById(id);
 
-        return optGenre.orElseThrow(() -> new NoSuchGenreException(String.format("Genre with id %s not found", id)));
+        return optGenre.orElseThrow(() -> new NoSuchModelException(String.format("Genre with id %s not found", id)));
     }
 
     public Genre add(Genre genre) {

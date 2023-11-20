@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,23 +18,19 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import ru.yandex.practicum.filmorate.exception.film.DuplicateFilmException;
-import ru.yandex.practicum.filmorate.exception.film.NoSuchFilmException;
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 @Repository
 @Primary
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final GenreStorage genreStorage;
 
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.genreStorage = genreStorage;
     }
 
     @Override
@@ -61,12 +56,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film add(Film film) {
-        int filmId = film.getId();
-
-        if (findOneById(filmId).isPresent()) {
-            throw new DuplicateFilmException(String.format("Film %s already exists", film));
-        }
-
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         final String query = "INSERT INTO film (name, description, release_date, duration, mpa_id)"
                 + " VALUES (?, ?, ?, ?, ?)";
@@ -127,7 +116,7 @@ public class FilmDbStorage implements FilmStorage {
                     filmId
             );
 
-            genreStorage.deleteAllByFilmId(filmId);
+            jdbcTemplate.update("DELETE FROM film_genre WHERE film_id = ?", filmId);
 
             if (film.getGenres() != null) {
                 List<Genre> genres = new ArrayList<>(film.getGenres());
@@ -152,7 +141,7 @@ public class FilmDbStorage implements FilmStorage {
             return findOneById(filmId).get();
         }
 
-        throw new NoSuchFilmException(String.format("Film %s not found", film));
+        throw new NoSuchModelException(String.format("Film %s not found", film));
     }
 
     @Override
@@ -200,8 +189,6 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rs.getDate("release_date").toLocalDate())
                 .duration(rs.getLong("duration"))
                 .mpa(mpa)
-                .likes(new HashSet<>(this.fetchLikes(rs.getInt("id"))))
-                .genres(new HashSet<>(genreStorage.findAllByFilmId(rs.getInt("id"))))
                 .build();
     }
 

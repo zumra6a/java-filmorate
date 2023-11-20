@@ -1,5 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,14 +12,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -91,7 +92,7 @@ class UserServiceTest {
     public void testFindOneByIdUserNotFound() {
         Mockito.doReturn(Optional.empty()).when(userStorage).findOneById(1);
 
-        assertThrows(NoSuchUserException.class, () -> userService.findOneById(1));
+        assertThrows(NoSuchModelException.class, () -> userService.findOneById(1));
 
         verify(userStorage, times(1)).findOneById(1);
     }
@@ -253,16 +254,10 @@ class UserServiceTest {
                 .birthday(LocalDate.of(2000, 3, 1))
                 .build();
 
-        user1.getFriends().addAll(Set.of(user2.getId(), user3.getId()));
-        user3.getFriends().addAll(Set.of(user1.getId(), user2.getId()));
+        Mockito.doReturn(List.of(user3)).when(userStorage).commonFriend(user1.getId(), user2.getId());
 
-        Mockito.doReturn(Optional.of(user1)).when(userStorage).findOneById(user1.getId());
-        Mockito.doReturn(Optional.of(user2)).when(userStorage).findOneById(user2.getId());
-        Mockito.doReturn(Optional.of(user3)).when(userStorage).findOneById(user3.getId());
+        userService.findCommonFriends(user1.getId(), user2.getId());
 
-        List<User> result = userService.findCommonFriends(10, 12);
-
-        assertEquals(1, result.size());
-        assertEquals(user2, result.get(0));
+        verify(userStorage).commonFriend(10, 11);
     }
 }

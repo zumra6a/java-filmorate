@@ -1,5 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,18 +16,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.Mpa.DuplicateMpaException;
-import ru.yandex.practicum.filmorate.exception.Mpa.NoSuchMpaException;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Repository
 public class MpaDbStorage implements MpaStorage {
@@ -55,12 +55,6 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Mpa add(Mpa mpa) {
-        final int mpaId = mpa.getId();
-
-        if (findOneById(mpaId).isPresent()) {
-            throw new DuplicateMpaException(String.format("MPA %s already exists", mpa));
-        }
-
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         final String query = "INSERT INTO mpa (name) VALUES (?)";
 
@@ -93,7 +87,7 @@ public class MpaDbStorage implements MpaStorage {
             return findOneById(mpaId).get();
         }
 
-        throw new NoSuchMpaException(String.format("MPA %s not found", mpa));
+        throw new NoSuchModelException(String.format("MPA %s not found", mpa));
     }
 
     @Override

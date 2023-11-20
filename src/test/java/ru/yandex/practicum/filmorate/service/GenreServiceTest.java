@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,12 +10,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ru.yandex.practicum.filmorate.exception.Genre.NoSuchGenreException;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
-
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -70,7 +71,7 @@ class GenreServiceTest {
     public void testFindOneByIdGenreNotFound() {
         Mockito.doReturn(Optional.empty()).when(genreStorage).findOneById(1);
 
-        assertThrows(NoSuchGenreException.class, () -> genreService.findOneById(1));
+        assertThrows(NoSuchModelException.class, () -> genreService.findOneById(1));
 
         verify(genreStorage, times(1)).findOneById(1);
     }

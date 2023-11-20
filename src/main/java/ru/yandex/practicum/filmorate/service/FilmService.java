@@ -1,42 +1,65 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.film.NoSuchFilmException;
-import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final GenreStorage genreStorage;
 
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage, GenreStorage genreStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.genreStorage = genreStorage;
     }
 
     public List<Film> findAll() {
-        return filmStorage.findAll();
+        List<Film> films = filmStorage.findAll();
+
+        genreStorage.fetchFilmGenres(films);
+
+        return films;
     }
 
     public Film findOneById(int filmId) {
         final Optional<Film> optFilm = filmStorage.findOneById(filmId);
 
-        return optFilm.orElseThrow(() -> new NoSuchFilmException(String.format("Film with id %s not found", filmId)));
+        if (optFilm.isPresent()) {
+            Film film = optFilm.get();
+
+            genreStorage.fetchFilmGenres(film);
+
+            return film;
+        }
+
+        throw new NoSuchModelException(String.format("Film with id %s not found", filmId));
     }
 
     public Film add(Film film) {
-        return filmStorage.add(film);
+        final Film addedFilm = filmStorage.add(film);
+
+        genreStorage.fetchFilmGenres(addedFilm);
+
+        return addedFilm;
     }
 
     public Film update(Film film) {
-        return filmStorage.update(film);
+        final Film updatedFilm = filmStorage.update(film);
+
+        genreStorage.fetchFilmGenres(updatedFilm);
+
+        return updatedFilm;
     }
 
     public List<Film> getPopularFilms(int count) {
@@ -53,11 +76,11 @@ public class FilmService {
         }
 
         if (optUser.isEmpty()) {
-            throw new NoSuchUserException(String.format("User with id %s not found", userId));
+            throw new NoSuchModelException(String.format("User with id %s not found", userId));
         }
 
         if (optFilm.isEmpty()) {
-            throw new NoSuchFilmException(String.format("Film with id %s not found", filmId));
+            throw new NoSuchModelException(String.format("Film with id %s not found", filmId));
         }
     }
 
@@ -71,11 +94,11 @@ public class FilmService {
         }
 
         if (optUser.isEmpty()) {
-            throw new NoSuchUserException(String.format("User with id %s not found", userId));
+            throw new NoSuchModelException(String.format("User with id %s not found", userId));
         }
 
         if (optFilm.isEmpty()) {
-            throw new NoSuchFilmException(String.format("Film with id %s not found", filmId));
+            throw new NoSuchModelException(String.format("Film with id %s not found", filmId));
         }
     }
 }

@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,12 +10,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ru.yandex.practicum.filmorate.exception.Mpa.NoSuchMpaException;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
-
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -70,7 +71,7 @@ class MpaServiceTest {
     public void testFindOneByIdMpaNotFound() {
         Mockito.doReturn(Optional.empty()).when(mpaStorage).findOneById(1);
 
-        assertThrows(NoSuchMpaException.class, () -> mpaService.findOneById(1));
+        assertThrows(NoSuchModelException.class, () -> mpaService.findOneById(1));
 
         verify(mpaStorage, times(1)).findOneById(1);
     }
