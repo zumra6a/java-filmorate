@@ -1,14 +1,14 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 @Service
 public class UserService {
@@ -25,11 +25,7 @@ public class UserService {
     public User findOneById(int userId) {
         final Optional<User> optUser = userStorage.findOneById(userId);
 
-        if (optUser.isPresent()) {
-            return optUser.get();
-        }
-
-        throw new NoSuchUserException(String.format("User with id %s not found", userId));
+        return optUser.orElseThrow(() -> new NoSuchModelException(String.format("User with id %s not found", userId)));
     }
 
     public User add(User user) {
@@ -52,28 +48,17 @@ public class UserService {
         final User user = findOneById(userId);
         final User friend = findOneById(friendId);
 
-        user.getFriends().add(friend.getId());
-        friend.getFriends().add(user.getId());
+        userStorage.addFriend(user.getId(), friend.getId());
     }
 
     public void removeFriend(int userId, int friendId) {
         final User user = findOneById(userId);
         final User friend = findOneById(friendId);
 
-        user.getFriends().remove(friend.getId());
-        friend.getFriends().remove(user.getId());
+        userStorage.deleteFriend(user.getId(), friend.getId());
     }
 
     public List<User> findCommonFriends(int userId, int otherId) {
-        final User user = findOneById(userId);
-        final User otherUser = findOneById(otherId);
-        final Set<Integer> otherUserFriends = otherUser.getFriends();
-
-        return user.getFriends().stream()
-                .filter(otherUserFriends::contains)
-                .map(userStorage::findOneById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+        return userStorage.commonFriend(userId, otherId);
     }
 }
