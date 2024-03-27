@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
 @WebMvcTest(controllers = UserController.class)
@@ -79,7 +80,7 @@ public class UserControllerTest {
                 .email("email@adress.com")
                 .login("login")
                 .name("User Name")
-                .birthday(LocalDate.of(2000, 07, 01))
+                .birthday(LocalDate.of(2000, 7, 1))
                 .build();
 
         Mockito.doReturn(user).when(userService).findOneById(1);
@@ -104,7 +105,7 @@ public class UserControllerTest {
                 .email("email@adress.com")
                 .login("login")
                 .name("User Name")
-                .birthday(LocalDate.of(2000, 07, 01))
+                .birthday(LocalDate.of(2000, 7, 1))
                 .build();
 
         final User updatedUser = user.toBuilder()
@@ -114,7 +115,7 @@ public class UserControllerTest {
                 .name("New Name")
                 .build();
 
-        Mockito.doReturn(updatedUser).when(userService).update(user);
+        Mockito.doReturn(updatedUser).when(userService).update(any());
 
         this.mockMvc
                 .perform(
@@ -138,10 +139,10 @@ public class UserControllerTest {
                 .email("email@adress.com")
                 .login("login")
                 .name("User Name")
-                .birthday(LocalDate.of(2000, 07, 01))
+                .birthday(LocalDate.of(2000, 7, 1))
                 .build();
 
-        Mockito.doReturn(user).when(userService).add(user);
+        Mockito.doReturn(user).when(userService).add(any());
 
         this.mockMvc
                 .perform(

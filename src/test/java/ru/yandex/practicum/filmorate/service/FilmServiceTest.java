@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,19 +11,20 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ru.yandex.practicum.filmorate.exception.film.NoSuchFilmException;
-import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class FilmServiceTest {
     @Mock
@@ -28,13 +33,16 @@ public class FilmServiceTest {
     @Mock
     private UserStorage userStorage;
 
+    @Mock
+    private GenreStorage genreStorage;
+
     @MockBean
     private FilmService filmService;
 
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        filmService = new FilmService(filmStorage, userStorage);
+        filmService = new FilmService(filmStorage, userStorage, genreStorage);
     }
 
     @Test
@@ -91,7 +99,7 @@ public class FilmServiceTest {
     public void testFindOneByIdFilmNotFound() {
         Mockito.doReturn(Optional.empty()).when(filmStorage).findOneById(1);
 
-        assertThrows(NoSuchFilmException.class, () -> filmService.findOneById(1));
+        assertThrows(NoSuchModelException.class, () -> filmService.findOneById(1));
 
         verify(filmStorage, times(1)).findOneById(1);
     }
@@ -178,7 +186,7 @@ public class FilmServiceTest {
         Mockito.doReturn(Optional.of(film)).when(filmStorage).findOneById(1);
         Mockito.doReturn(Optional.empty()).when(userStorage).findOneById(1);
 
-        assertThrows(NoSuchUserException.class, () -> filmService.addLike(1, 1));
+        assertThrows(NoSuchModelException.class, () -> filmService.addLike(1, 1));
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);
@@ -198,7 +206,7 @@ public class FilmServiceTest {
         Mockito.doReturn(Optional.empty()).when(filmStorage).findOneById(1);
         Mockito.doReturn(Optional.of(user)).when(userStorage).findOneById(1);
 
-        assertThrows(NoSuchFilmException.class, () -> filmService.addLike(1, 1));
+        assertThrows(NoSuchModelException.class, () -> filmService.addLike(1, 1));
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);
@@ -222,7 +230,6 @@ public class FilmServiceTest {
                 .birthday(LocalDate.of(2000, 7, 1))
                 .build();
 
-        film.getLikes().add(user.getId());
         Mockito.doReturn(Optional.of(film)).when(filmStorage).findOneById(1);
         Mockito.doReturn(Optional.of(user)).when(userStorage).findOneById(1);
 
@@ -246,7 +253,7 @@ public class FilmServiceTest {
         Mockito.doReturn(Optional.of(film)).when(filmStorage).findOneById(1);
         Mockito.doReturn(Optional.empty()).when(userStorage).findOneById(1);
 
-        assertThrows(NoSuchUserException.class, () -> filmService.removeLike(1, 1));
+        assertThrows(NoSuchModelException.class, () -> filmService.removeLike(1, 1));
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);
@@ -266,7 +273,7 @@ public class FilmServiceTest {
         Mockito.doReturn(Optional.empty()).when(filmStorage).findOneById(1);
         Mockito.doReturn(Optional.of(user)).when(userStorage).findOneById(1);
 
-        assertThrows(NoSuchFilmException.class, () -> filmService.removeLike(1, 1));
+        assertThrows(NoSuchModelException.class, () -> filmService.removeLike(1, 1));
 
         verify(filmStorage, times(1)).findOneById(1);
         verify(userStorage, times(1)).findOneById(1);

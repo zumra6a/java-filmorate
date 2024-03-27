@@ -1,54 +1,69 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.film.NoSuchFilmException;
-import ru.yandex.practicum.filmorate.exception.user.NoSuchUserException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import ru.yandex.practicum.filmorate.exception.NoSuchModelException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final GenreStorage genreStorage;
 
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage, GenreStorage genreStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.genreStorage = genreStorage;
     }
 
     public List<Film> findAll() {
-        return filmStorage.findAll();
+        List<Film> films = filmStorage.findAll();
+
+        genreStorage.fetchFilmGenres(films);
+
+        return films;
     }
 
     public Film findOneById(int filmId) {
         final Optional<Film> optFilm = filmStorage.findOneById(filmId);
 
         if (optFilm.isPresent()) {
-            return optFilm.get();
+            Film film = optFilm.get();
+
+            genreStorage.fetchFilmGenres(film);
+
+            return film;
         }
 
-        throw new NoSuchFilmException(String.format("Film with id %s not found", filmId));
+        throw new NoSuchModelException(String.format("Film with id %s not found", filmId));
     }
 
     public Film add(Film film) {
-        return filmStorage.add(film);
+        final Film addedFilm = filmStorage.add(film);
+
+        genreStorage.fetchFilmGenres(addedFilm);
+
+        return addedFilm;
     }
 
     public Film update(Film film) {
-        return filmStorage.update(film);
+        final Film updatedFilm = filmStorage.update(film);
+
+        genreStorage.fetchFilmGenres(updatedFilm);
+
+        return updatedFilm;
     }
 
     public List<Film> getPopularFilms(int count) {
-        return findAll().stream()
-                .sorted((Film a, Film b) -> b.getLikes().size() - a.getLikes().size())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getPopularFilms(count);
     }
 
     public void addLike(int filmId, int userId) {
@@ -56,17 +71,16 @@ public class FilmService {
         final Optional<User> optUser = userStorage.findOneById(userId);
 
         if (optFilm.isPresent() && optUser.isPresent()) {
-            final Film film = optFilm.get();
-            film.getLikes().add(userId);
+            filmStorage.addLike(filmId, userId);
             return;
         }
 
         if (optUser.isEmpty()) {
-            throw new NoSuchUserException(String.format("User with id %s not found", userId));
+            throw new NoSuchModelException(String.format("User with id %s not found", userId));
         }
 
         if (optFilm.isEmpty()) {
-            throw new NoSuchFilmException(String.format("Film with id %s not found", filmId));
+            throw new NoSuchModelException(String.format("Film with id %s not found", filmId));
         }
     }
 
@@ -75,18 +89,16 @@ public class FilmService {
         final Optional<User> optUser = userStorage.findOneById(userId);
 
         if (optFilm.isPresent() && optUser.isPresent()) {
-            final Film film = optFilm.get();
-            film.getLikes().remove(userId);
-
+            filmStorage.removeLike(filmId, userId);
             return;
         }
 
         if (optUser.isEmpty()) {
-            throw new NoSuchUserException(String.format("User with id %s not found", userId));
+            throw new NoSuchModelException(String.format("User with id %s not found", userId));
         }
 
         if (optFilm.isEmpty()) {
-            throw new NoSuchFilmException(String.format("Film with id %s not found", filmId));
+            throw new NoSuchModelException(String.format("Film with id %s not found", filmId));
         }
     }
 }
